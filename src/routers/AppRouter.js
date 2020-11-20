@@ -1,31 +1,77 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     BrowserRouter as Router,
     Switch,
-    Route,
-    Redirect
   } from 'react-router-dom';
 
+import { useDispatch } from 'react-redux'
 import { AuthRouter } from './AuthRouter';
 import { JournalScreen } from '../components/journal/JournalScreen';
+import { firebase } from '../firebase/firebaseConfig';
+import { login } from '../actions/auth';
+import { PrivateRoute } from './PrivateRoute';
+import { PublicRoute } from './PublicRoute';
 
 export const AppRouter = () => {
+
+    const dispatch = useDispatch();
+
+    const [checking, setChecking] = useState(true)
+    const [isLoggedIn, setisLoggedIn] = useState(false)
+
+
+    useEffect (() => {
+        firebase.auth().onAuthStateChanged((user) => {
+            if ( user ) {
+                dispatch( login(user.uid, user.displayName));
+                setisLoggedIn(true);
+            } else {
+                setisLoggedIn(false);
+            }
+
+            setChecking(false);
+            
+        });
+    }, [ dispatch, setChecking, setisLoggedIn ])
+
+    if (checking) {
+        return(
+            <h1>Wait....</h1>
+        )
+    }
+
     return (
         <Router>
             <div>
                 <Switch>
-                    <Route 
+                    {/* <Route 
                         path="/auth"
                         component={ AuthRouter }
+                    /> */}
+
+                    <PublicRoute
+                        
+                        path="/auth" 
+                        component={ AuthRouter } 
+                        isAuthenticated = {isLoggedIn}
                     />
 
-                    <Route 
+                    <PrivateRoute
                         exact
-                        path="/"
-                        component={ JournalScreen }
+                        path="/" 
+                        component={ JournalScreen } 
+                        isAuthenticated = {isLoggedIn}
                     />
 
-                    <Redirect to="/auth/login" />
+
+
+                    {/* <Route 
+                        
+                        path="/"
+                        component={  }
+                    />
+
+                    <Redirect to="/auth/login" /> */}
 
 
                 </Switch>
