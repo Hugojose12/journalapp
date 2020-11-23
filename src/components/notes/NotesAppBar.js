@@ -21,8 +21,6 @@ export const NotesAppBar = () => {
         if (file) {
             dispatch( startUploading(file) )
         }
-
-
     }
 
     return (
